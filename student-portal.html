@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Student Portal — MongoDB Version</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(180deg,#e7eef7 0%, #d6e6f4 60%);
+      min-height:100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      padding:20px;
+    }
+    .card-auth { max-width:640px; margin:30px auto; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.08); overflow:hidden; }
+    .card-auth .card-header { background:linear-gradient(90deg,#2f4f8a,#476ea8); color:#fff; font-weight:600; display:flex; gap:10px; align-items:center; }
+    .form-control-icon { position:relative; }
+    .form-control-icon .fa { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#6c757d; pointer-events:none;}
+    .form-control-icon input { padding-left:40px; }
+    .small-stat { background:#fff; padding:14px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
+    .cursor-link { cursor:pointer; color: #0d6efd; text-decoration:underline; }
+  </style>
+</head>
+
+<body>
+
+<!-- AUTH AREA -->
+<div id="auth-area">
+
+  <!-- REGISTER -->
+  <div class="card card-auth" id="registerCard">
+    <div class="card-header p-3"><i class="fa fa-graduation-cap"></i><div>&nbsp; Student Registration</div></div>
+    <div class="card-body p-4 bg-white">
+
+      <form id="registerForm">
+        <div class="mb-3">
+          <label class="form-label">Full Name</label>
+          <div class="form-control-icon">
+            <i class="fa fa-user"></i>
+            <input id="fullname" class="form-control" required />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <div class="form-control-icon">
+            <i class="fa fa-envelope"></i>
+            <input id="email" type="email" class="form-control" required />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Phone</label>
+          <div class="form-control-icon">
+            <i class="fa fa-phone"></i>
+            <input id="phone" class="form-control" required />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label>Password</label>
+            <div class="form-control-icon">
+              <i class="fa fa-lock"></i>
+              <input id="password" type="password" class="form-control" required />
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Confirm Password</label>
+            <div class="form-control-icon">
+              <i class="fa fa-lock"></i>
+              <input id="confirmPassword" type="password" class="form-control" required />
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-100">Register</button>
+
+        <p class="text-center mt-3">
+          <span id="showLogin" class="cursor-link">Already have an account? Login</span>
+        </p>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="card card-auth" id="loginCard" style="display:none;">
+    <div class="card-header p-3"><i class="fa fa-sign-in-alt"></i><div>&nbsp; Student Login</div></div>
+    <div class="card-body p-4 bg-white">
+
+      <form id="loginForm">
+        <div class="mb-3">
+          <label>Email</label>
+          <div class="form-control-icon">
+            <i class="fa fa-envelope"></i>
+            <input id="loginEmail" type="email" class="form-control" required />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label>Password</label>
+          <div class="form-control-icon">
+            <i class="fa fa-lock"></i>
+            <input id="loginPassword" type="password" class="form-control" required />
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-100">Login</button>
+
+        <p class="text-center mt-3">
+          <span id="showRegister" class="cursor-link">Create new account</span>
+        </p>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none;">
+  <div class="container">
+    <div class="row my-4">
+
+      <div class="col-md-3 text-center">
+        <div id="profileIcon" style="width:60px;height:60px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin:auto">U</div>
+        <h5 id="sidebarName" class="mt-2"></h5>
+        <small>Student</small>
+        <button id="logoutBtn" class="btn btn-outline-secondary btn-sm mt-3">Logout</button>
+      </div>
+
+      <div class="col-md-9">
+        <h4>Welcome back, <span id="displayName"></span>!</h4>
+
+        <div class="row g-3 mt-3">
+          <div class="col-md-3"><div class="small-stat">Registered<br><strong id="statCourses">0</strong></div></div>
+          <div class="col-md-3"><div class="small-stat">Credits<br><strong id="statCredits">0</strong></div></div>
+          <div class="col-md-3"><div class="small-stat">Progress<br><strong id="statProgress">0%</strong></div></div>
+        </div>
+
+        <div class="card p-3 mt-4">
+          <h5>Available Courses</h5>
+          <table class="table mt-2">
+            <thead><tr><th>Code</th><th>Title</th><th>Instructor</th><th>Schedule</th><th>Credits</th><th></th></tr></thead>
+            <tbody id="coursesTable"></tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// BACKEND URL
+const API = "http://localhost:5000";
+
+// DEMO COURSES
+const courses = [
+  {code:'CS101', title:'Introduction to Computer Science', instructor:'Dr. Smith', schedule:'Mon/Wed 10-11:30', credits:3},
+  {code:'MATH201', title:'Calculus I', instructor:'Prof. Johnson', schedule:'Tue/Thu 1-2:30', credits:4},
+  {code:'ENG101', title:'Academic Writing', instructor:'Dr. Williams', schedule:'Mon/Wed 2-3:30', credits:3},
+];
+
+// UI ELEMENTS
+const registerCard = document.getElementById("registerCard");
+const loginCard = document.getElementById("loginCard");
+const dashboard = document.getElementById("dashboard");
+
+// SWITCH SCREENS
+showLogin.onclick = () => { registerCard.style.display="none"; loginCard.style.display="block"; };
+showRegister.onclick = () => { loginCard.style.display="none"; registerCard.style.display="block"; };
+
+// REGISTER
+document.getElementById("registerForm").onsubmit = async (e) => {
+  e.preventDefault();
+
+  const name = fullname.value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const pw = document.getElementById("password").value;
+  const pw2 = document.getElementById("confirmPassword").value;
+
+  if (pw !== pw2) return alert("Passwords don't match!");
+
+  const res = await fetch(`${API}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, phone, password: pw })
+  });
+
+  const data = await res.json();
+  if (!data.status) return alert(data.message);
+
+  alert("Registered! Logging in...");
+  loadUser(email);
+};
+
+// LOGIN
+document.getElementById("loginForm").onsubmit = async (e) => {
+  e.preventDefault();
+
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value;
+
+  const res = await fetch(`${API}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({email, password})
+  });
+
+  const data = await res.json();
+
+  if (!data.status) return alert("Invalid email or password");
+
+  loadUser(email);
+};
+
+// LOAD USER DASHBOARD
+async function loadUser(email) {
+  const res = await fetch(`${API}/get-user`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({email})
+  });
+
+  const data = await res.json();
+  const user = data.user;
+
+  registerCard.style.display="none";
+  loginCard.style.display="none";
+  dashboard.style.display="block";
+
+  displayName.textContent = user.name.split(" ")[0];
+  sidebarName.textContent = user.name;
+  profileIcon.textContent = user.name.charAt(0).toUpperCase();
+
+  renderCourses(user);
+}
+
+// RENDER COURSES
+function renderCourses(user) {
+  const tb = document.getElementById("coursesTable");
+  tb.innerHTML = "";
+
+  courses.forEach(c => {
+    const isReg = user.courses.includes(c.code);
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${c.code}</td>
+      <td>${c.title}</td>
+      <td>${c.instructor}</td>
+      <td>${c.schedule}</td>
+      <td>${c.credits}</td>
+      <td><button class="btn btn-sm ${isReg?"btn-success":"btn-outline-primary"}">${isReg?"Registered":"Register"}</button></td>
+    `;
+
+    tr.querySelector("button").onclick = () => registerCourse(user.email, c.code);
+
+    tb.appendChild(tr);
+  });
+
+  updateStats(user);
+}
+
+// UPDATE STATISTICS
+function updateStats(user) {
+  statCourses.textContent = user.courses.length;
+  statCredits.textContent = user.courses.length * 3;
+  statProgress.textContent = (user.courses.length * 25) + "%";
+}
+
+// REGISTER COURSE (MongoDB)
+async function registerCourse(email, courseCode) {
+  const res = await fetch(`${API}/register-course`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({email, courseCode})
+  });
+
+  const data = await res.json();
+  loadUser(email);
+}
+
+// LOGOUT
+logoutBtn.onclick = () => {
+  dashboard.style.display="none";
+  loginCard.style.display="block";
+};
+
+</script>
+</body>
+</html>
